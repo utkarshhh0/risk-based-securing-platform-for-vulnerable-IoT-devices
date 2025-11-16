@@ -35,7 +35,7 @@ st.markdown("""
     }
     /* Sidebar background color */
     .css-1d391kg {
-        background-color: #0F0F1A;
+        background-color: #08080F;
     }
     /* Text color */
     .st-emotion-cache-183lzff {
@@ -58,6 +58,19 @@ st.markdown("""
         background-color: #8A2BE2;
         color: white;
         border: 1px solid #6A0DAD;
+    }
+    
+    /* Glass header styling */
+    .glass-header {
+        background-color: rgba(138, 43, 226, 0.2); /* Semi-transparent purple */
+        backdrop-filter: blur(10px); /* Glass effect */
+        border-radius: 10px;
+        border: 1px solid rgba(138, 43, 226, 0.4);
+        padding: 20px;
+        text-align: center;
+        margin-bottom: 20px;
+        font-family: 'SF Mono', 'Roboto Mono', monospace; /* Monospace font */
+        color: #FFFFFF; /* White text for contrast */
     }
 </style>
 """, unsafe_allow_html=True)
@@ -171,7 +184,11 @@ def main():
             # st.session_state.policy = saved_state.get('policy', load_policy())
         st.session_state.session_loaded = True
     
-    st.title("Risk-Based Securing Platform for Vulnerable IoT Devices")
+    st.markdown("""
+        <div class="glass-header">
+            <h1>Risk-Based Securing Platform for Vulnerable IoT Devices</h1>
+        </div>
+        """, unsafe_allow_html=True)
     st.markdown("---")
     
     # Sidebar
