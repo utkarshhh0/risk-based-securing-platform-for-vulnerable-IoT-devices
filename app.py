@@ -22,10 +22,46 @@ from session_manager import save_session_state, load_session_state
 # Page configuration
 st.set_page_config(
     page_title="IoT Security Platform",
-    page_icon="🔒",
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# Inject custom CSS for a cyber-security purple theme
+st.markdown("""
+<style>
+    /* Main background color */
+    .stApp {
+        background-color: #1A1A2E;
+    }
+    /* Sidebar background color */
+    .css-1d391kg {
+        background-color: #0F0F1A;
+    }
+    /* Text color */
+    .st-emotion-cache-183lzff {
+        color: #E0E0E0;
+    }
+    h1, h2, h3, h4, h5, h6 {
+        color: #FFFFFF;
+    }
+    .st-emotion-cache-1629p8f span {
+        color: #E0E0E0;
+    }
+    /* Button styling */
+    .stButton>button {
+        background-color: #6A0DAD;
+        color: white;
+        border-radius: 8px;
+        border: 1px solid #8A2BE2;
+    }
+    .stButton>button:hover {
+        background-color: #8A2BE2;
+        color: white;
+        border: 1px solid #6A0DAD;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 
 # Initialize session state
 if 'devices' not in st.session_state:
@@ -56,13 +92,13 @@ def display_alerts():
     if st.session_state.alerts:
         for alert in st.session_state.alerts[-5:]:  # Show last 5 alerts
             if alert['type'] == 'error':
-                st.error(alert['message'])
+                st.markdown(f"<p style='color: #DC3545;'>{alert['message']}</p>", unsafe_allow_html=True)
             elif alert['type'] == 'success':
-                st.success(alert['message'])
+                st.markdown(f"<p style='color: #00FF00;'>{alert['message']}</p>", unsafe_allow_html=True)
             elif alert['type'] == 'warning':
-                st.warning(alert['message'])
+                st.markdown(f"<p style='color: #FFA500;'>{alert['message']}</p>", unsafe_allow_html=True)
             else:
-                st.info(alert['message'])
+                st.markdown(f"<p style='color: #00BFFF;'>{alert['message']}</p>", unsafe_allow_html=True)
 
 
 def refresh_device_data():
@@ -135,12 +171,12 @@ def main():
             # st.session_state.policy = saved_state.get('policy', load_policy())
         st.session_state.session_loaded = True
     
-    st.title("🔒 Risk-Based Securing Platform for Vulnerable IoT Devices")
+    st.title("Risk-Based Securing Platform for Vulnerable IoT Devices")
     st.markdown("---")
     
     # Sidebar
     with st.sidebar:
-        st.header("⚙️ Settings")
+        st.header("Settings")
         
         # Show which dataset is being used
         from pathlib import Path
@@ -171,7 +207,7 @@ def main():
             help="Enter CIDR notation (e.g., 192.168.1.0/24) or single IP"
         )
         
-        if st.button("🔍 Scan Network", type="primary", use_container_width=True):
+        if st.button("Scan Network", type="primary", use_container_width=True):
             with st.spinner("Scanning network..."):
                 if use_simulation:
                     discovered = simulate_scan(scan_subnet_input, use_realistic=use_realistic)
@@ -197,10 +233,10 @@ def main():
         
         st.markdown("---")
         st.markdown("### Device Management")
-        if st.button("⚙️ Setup New Device", use_container_width=True):
+        if st.button("Setup New Device", use_container_width=True):
             st.session_state.show_setup_device = True
         
-        if st.button("🔄 Restore Original Dataset", use_container_width=True, help="Restore all devices with original vulnerabilities"):
+        if st.button("Restore Original Dataset", use_container_width=True, help="Restore all devices with original vulnerabilities"):
             from session_manager import restore_default_dataset
             from iot_simulator import DEFAULT_DEVICES, save_simulated_devices
             with st.spinner("Restoring original dataset..."):
@@ -211,21 +247,21 @@ def main():
                     clear_session_state()
                     # Refresh device data
                     refresh_device_data()
-                    add_alert("✅ Original dataset restored with all vulnerabilities!", "success")
+                    add_alert("Original dataset restored with all vulnerabilities!", "success")
                     st.rerun()
                 except Exception as e:
                     add_alert(f"Failed to restore dataset: {str(e)}", "error")
         
         st.markdown("---")
         st.markdown("### Security Policy")
-        if st.button("⚙️ Edit Policy", use_container_width=True):
+        if st.button("Edit Policy", use_container_width=True):
             st.session_state.show_policy = True
     
     # Main content area
     display_alerts()
     
     # Tabs for different views
-    tab1, tab2, tab3, tab4 = st.tabs(["📊 Dashboard", "🔍 Device Details", "📝 Remediation Logs", "📤 Export"])
+    tab1, tab2, tab3, tab4 = st.tabs(["Dashboard", "Device Details", "Remediation Logs", "Export"])
     
     with tab1:
         display_dashboard()
@@ -249,10 +285,10 @@ def main():
 
 def display_dashboard():
     """Display main dashboard with device overview."""
-    st.header("📊 Security Dashboard")
+    st.header("Security Dashboard")
     
     if not st.session_state.devices:
-        st.info("👆 Start by scanning your network using the sidebar controls.")
+        st.markdown("<p style='color: #00BFFF;'>Start by scanning your network using the sidebar controls.</p>", unsafe_allow_html=True)
         return
     
     # Calculate statistics
@@ -265,7 +301,7 @@ def display_dashboard():
     avg_risk_score = sum(d['risk_score'] for d in st.session_state.devices) / total_devices if total_devices > 0 else 0
     
     # Enhanced metrics with better styling
-    st.markdown("### 📈 Security Overview")
+    st.markdown("### Security Overview")
     col1, col2, col3, col4, col5 = st.columns(5)
     
     with col1:
@@ -308,7 +344,7 @@ def display_dashboard():
         )
     
     # Risk score progress bar
-    st.markdown("### 🎯 Overall Security Posture")
+    st.markdown("### Overall Security Posture")
     overall_risk = (critical_devices * 100 + high_risk_devices * 60 + medium_risk_devices * 30) / total_devices if total_devices > 0 else 0
     security_score = max(0, 100 - overall_risk)
     
@@ -317,13 +353,13 @@ def display_dashboard():
         st.progress(security_score / 100, text=f"Security Score: {security_score:.1f}/100")
     with col2:
         if security_score >= 80:
-            st.success("🟢 Excellent")
+            st.markdown("<h4 style='color: #00FF00;'>Excellent</h4>")
         elif security_score >= 60:
-            st.warning("🟡 Good")
+            st.markdown("<h4 style='color: #00BFFF;'>Good</h4>")
         elif security_score >= 40:
-            st.warning("🟠 Fair")
+            st.markdown("<h4 style='color: #FFA500;'>Fair</h4>")
         else:
-            st.error("🔴 Poor")
+            st.markdown("<h4 style='color: #DC3545;'>Poor</h4>")
     
     st.markdown("---")
     
@@ -331,7 +367,7 @@ def display_dashboard():
     col1, col2 = st.columns(2)
     
     with col1:
-        st.markdown("### 📊 Risk Distribution")
+        st.markdown("### Risk Distribution")
         # Pie chart for risk categories
         risk_counts = {
             'Critical': critical_devices,
@@ -345,21 +381,26 @@ def display_dashboard():
                 values=list(risk_counts.values()),
                 names=list(risk_counts.keys()),
                 color_discrete_map={
-                    'Critical': '#FF4444',
-                    'High': '#FF8800',
-                    'Medium': '#FFBB00',
-                    'Low': '#88FF88'
+                    'Critical': '#FF00FF',
+                    'High': '#DC3545',
+                    'Medium': '#FFA500',
+                    'Low': '#00BFFF'
                 },
                 hole=0.4
             )
-            fig_pie.update_traces(textposition='inside', textinfo='percent+label')
-            fig_pie.update_layout(showlegend=True, height=350)
+            fig_pie.update_layout(
+                showlegend=True, 
+                height=350, 
+                paper_bgcolor='rgba(0,0,0,0)', 
+                plot_bgcolor='rgba(0,0,0,0)',
+                font_color='#E0E0E0'
+            )
             st.plotly_chart(fig_pie, use_container_width=True)
         else:
-            st.info("No devices to display")
+            st.markdown("<p style='color: #00BFFF;'>No devices to display</p>", unsafe_allow_html=True)
     
     with col2:
-        st.markdown("### 🔍 Vulnerability Types")
+        st.markdown("### Vulnerability Types")
         # Count vulnerability types
         vuln_types = {}
         for result in st.session_state.devices:
@@ -373,30 +414,43 @@ def display_dashboard():
                 y=list(vuln_types.values()),
                 labels={'x': 'Vulnerability Type', 'y': 'Count'},
                 color=list(vuln_types.values()),
-                color_continuous_scale='Reds'
+                color_continuous_scale='Purples'
             )
-            fig_bar.update_layout(showlegend=False, height=350, xaxis_tickangle=-45)
+            fig_bar.update_layout(
+                showlegend=False, 
+                height=350, 
+                xaxis_tickangle=-45,
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0)',
+                font_color='#E0E0E0'
+            )
             st.plotly_chart(fig_bar, use_container_width=True)
         else:
-            st.info("No vulnerabilities detected")
+            st.markdown("<p style='color: #00BFFF;'>No vulnerabilities detected</p>", unsafe_allow_html=True)
     
     # Risk score distribution
-    st.markdown("### 📉 Risk Score Distribution")
+    st.markdown("### Risk Score Distribution")
     risk_scores = [d['risk_score'] for d in st.session_state.devices]
     if risk_scores:
         fig_hist = px.histogram(
             x=risk_scores,
             nbins=20,
             labels={'x': 'Risk Score', 'y': 'Number of Devices'},
-            color_discrete_sequence=['#FF4444']
+            color_discrete_sequence=['#FF00FF']
         )
-        fig_hist.update_layout(height=300, showlegend=False)
+        fig_hist.update_layout(
+            height=300, 
+            showlegend=False,
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)',
+            font_color='#E0E0E0'
+        )
         st.plotly_chart(fig_hist, use_container_width=True)
     
     st.markdown("---")
     
     # Top vulnerable devices
-    st.markdown("### 🚨 Top Vulnerable Devices")
+    st.markdown("### Top Vulnerable Devices")
     sorted_devices = sorted(st.session_state.devices, key=lambda x: x['risk_score'], reverse=True)
     top_devices = sorted_devices[:5]
     
@@ -409,21 +463,17 @@ def display_dashboard():
         # Color based on risk
         if risk_category == 'Critical':
             color = '#FF4444'
-            icon = '🔴'
         elif risk_category == 'High':
             color = '#FF8800'
-            icon = '🟠'
         elif risk_category == 'Medium':
             color = '#FFBB00'
-            icon = '🟡'
         else:
             color = '#88FF88'
-            icon = '🟢'
         
         with st.container():
             col1, col2, col3, col4 = st.columns([2, 2, 1, 1])
             with col1:
-                st.markdown(f"**{icon} {device.get('hostname', 'Unknown')}**")
+                st.markdown(f"**{device.get('hostname', 'Unknown')}**")
                 st.caption(f"IP: {device.get('ip')}")
             with col2:
                 st.markdown(f"**{vuln_count}** vulnerabilities")
@@ -440,7 +490,7 @@ def display_dashboard():
             st.markdown("---")
     
     # Device table with enhanced styling
-    st.markdown("### 📋 Complete Device Inventory")
+    st.markdown("### Complete Device Inventory")
     
     device_data = []
     for result in st.session_state.devices:
@@ -459,30 +509,30 @@ def display_dashboard():
     # Color code by risk category
     def color_risk(val):
         if val == 'Critical':
-            return 'background-color: #ff4444; color: white; font-weight: bold'
+            return 'color: #FF00FF; font-weight: bold'
         elif val == 'High':
-            return 'background-color: #ff8800; color: white; font-weight: bold'
+            return 'color: #DC3545; font-weight: bold'
         elif val == 'Medium':
-            return 'background-color: #ffbb00; color: black'
+            return 'color: #FFA500;'
         else:
-            return 'background-color: #88ff88; color: black'
+            return 'color: #00BFFF;'
     
     def color_score(val):
         if val >= 70:
-            return 'background-color: #ff4444; color: white; font-weight: bold'
+            return 'color: #FF00FF; font-weight: bold'
         elif val >= 40:
-            return 'background-color: #ff8800; color: white'
+            return 'color: #DC3545;'
         elif val >= 20:
-            return 'background-color: #ffbb00; color: black'
+            return 'color: #FFA500;'
         else:
-            return 'background-color: #88ff88; color: black'
+            return 'color: #00BFFF;'
     
     styled_df = df.style.applymap(color_risk, subset=['Risk Category']).applymap(color_score, subset=['Risk Score'])
     st.dataframe(styled_df, use_container_width=True, hide_index=True, height=400)
     
     # Quick actions
     st.markdown("---")
-    st.markdown("### ⚡ Quick Actions")
+    st.markdown("### Quick Actions")
     col1, col2, col3 = st.columns(3)
     
     with col1:
@@ -552,37 +602,36 @@ def display_dashboard():
                     # Verify fixes were applied by checking if devices are still critical
                     still_critical = [d for d in st.session_state.devices if d['risk_category'] == 'Critical']
                     if still_critical and len(still_critical) < len(critical):
-                        st.info(f"📉 {len(critical) - len(still_critical)} devices are no longer critical after fixes!")
+                        st.markdown(f"<p style='color: #00BFFF;'>{len(critical) - len(still_critical)} devices are no longer critical after fixes!</p>", unsafe_allow_html=True)
                     
                     # Show summary with before/after comparison
                     if fixes_summary:
-                        st.success(f"✅ Successfully fixed {len(fixes_summary)} critical devices!")
-                        st.info(f"📊 **Total Risk Reduction:** {total_risk_reduction:.1f} points across all devices")
+                        st.markdown(f"<p style='color: #00FF00;'>Successfully fixed {len(fixes_summary)} critical devices!</p>", unsafe_allow_html=True)
+                        st.markdown(f"<p style='color: #00BFFF;'>**Total Risk Reduction:** {total_risk_reduction:.1f} points across all devices</p>", unsafe_allow_html=True)
                         
-                        with st.expander("📋 Detailed Fix Summary - Devices Still Visible with Reduced Risk"):
+                        with st.expander("Detailed Fix Summary - Devices Still Visible with Reduced Risk"):
                             for summary in fixes_summary:
                                 # Check if device is still critical after fix
                                 current_device = next((d for d in st.session_state.devices if d['device']['ip'] == summary['ip']), None)
                                 
                                 if summary.get('status') == 'failed':
-                                    st.error(f"❌ **{summary['ip']}** ({summary.get('hostname', 'Unknown')}) - {summary.get('message', 'Fix failed')}")
+                                    st.markdown(f"<p style='color: #DC3545;'>**{summary['ip']}** ({summary.get('hostname', 'Unknown')}) - {summary.get('message', 'Fix failed')}</p>", unsafe_allow_html=True)
                                 elif summary.get('status') == 'skipped':
-                                    st.warning(f"⚠️ **{summary['ip']}** ({summary.get('hostname', 'Unknown')}) - {summary.get('message', 'Skipped')}")
+                                    st.markdown(f"<p style='color: #FFA500;'>**{summary['ip']}** ({summary.get('hostname', 'Unknown')}) - {summary.get('message', 'Skipped')}</p>", unsafe_allow_html=True)
                                 elif current_device:
                                     new_category = current_device['risk_category']
-                                    status_icon = "🟢" if new_category != "Critical" else "🟡"
-                                    st.write(f"{status_icon} **{summary['ip']}** ({summary.get('hostname', 'Unknown')})")
+                                    st.write(f"**{summary['ip']}** ({summary.get('hostname', 'Unknown')})")
                                     st.write(f"   Risk: {summary['old_risk']:.1f} → **{summary['new_risk']:.1f}** ({new_category})")
                                     if summary.get('reduction', 0) > 0:
                                         st.write(f"   Reduction: **-{summary['reduction']:.1f} points**")
                                     if summary.get('fixes'):
                                         st.write(f"   Fixes: {', '.join(summary['fixes'])}")
-                                    st.write("   ✅ Device still visible in list with updated risk score")
+                                    st.write("Device still visible in list with updated risk score")
                                 else:
-                                    st.warning(f"⚠️ **{summary['ip']}** - Device not found after refresh")
+                                    st.markdown(f"<p style='color: #FFA500;'>**{summary['ip']}** - Device not found after refresh</p>", unsafe_allow_html=True)
                                 st.markdown("---")
                         
-                        add_alert(f"✅ Fixed {len(fixes_summary)} critical devices. Devices remain visible with reduced risk scores. Total reduction: {total_risk_reduction:.1f} points", "success")
+                        add_alert(f"Fixed {len(fixes_summary)} critical devices. Devices remain visible with reduced risk scores. Total reduction: {total_risk_reduction:.1f} points", "success")
                     else:
                         add_alert("No fixes were applied", "warning")
                     
@@ -591,7 +640,7 @@ def display_dashboard():
                 add_alert("No critical devices found", "info")
     
     with col2:
-        if st.button("📊 Refresh Analysis", use_container_width=True):
+        if st.button("Refresh Analysis", use_container_width=True):
             with st.spinner("Refreshing device analysis from files..."):
                 # Refresh from simulator and re-analyze (reloads from files)
                 refresh_device_data()
@@ -601,7 +650,7 @@ def display_dashboard():
                 st.rerun()
     
     with col3:
-        if st.button("📥 Export Report", use_container_width=True):
+        if st.button("Export Report", use_container_width=True):
             device_data = []
             for result in st.session_state.devices:
                 device = result['device']
@@ -623,10 +672,10 @@ def display_dashboard():
 
 def display_device_details():
     """Display detailed view for individual devices."""
-    st.header("🔍 Device Details")
+    st.header("Device Details")
     
     if not st.session_state.devices:
-        st.info("No devices scanned yet. Start a scan from the sidebar.")
+        st.markdown("<p style='color: #00BFFF;'>No devices scanned yet. Start a scan from the sidebar.</p>", unsafe_allow_html=True)
         return
     
     # Device selector
@@ -668,7 +717,7 @@ def display_device_details():
     # Risk Explanation
     if result.get('explanation'):
         st.markdown("---")
-        st.markdown("### 📋 Risk Explanation")
+        st.markdown("### Risk Explanation")
         st.markdown(result['explanation'])
     
     # Vulnerabilities
@@ -676,17 +725,17 @@ def display_device_details():
     st.subheader("Vulnerabilities & Fixes")
     
     if not result['vulnerabilities']:
-        st.success("✅ No vulnerabilities detected!")
+        st.markdown("<p style='color: #00FF00;'>No vulnerabilities detected!</p>", unsafe_allow_html=True)
     else:
         for i, vuln in enumerate(result['vulnerabilities']):
-            with st.expander(f"🔴 {vuln.get('type', 'Unknown')} - {vuln.get('severity', 'medium').upper()}"):
+            with st.expander(f"{vuln.get('type', 'Unknown')} - {vuln.get('severity', 'medium').upper()}"):
                 st.write(f"**Description:** {vuln.get('description', 'No description')}")
                 
                 if vuln['type'] == 'default_credentials':
                     st.write(f"**Username:** {vuln.get('username')}")
                     st.write(f"**Password:** {vuln.get('password')}")
                     st.write(f"**Risk Contribution:** +{vuln.get('risk_contribution', 0)} points")
-                    if st.button(f"🔧 Fix Credentials", key=f"fix_cred_{i}"):
+                    if st.button(f"Fix Credentials", key=f"fix_cred_{i}"):
                         with st.spinner("Fixing credentials..."):
                             fix_result = fix_default_credentials(
                                 device['ip'],
@@ -698,7 +747,7 @@ def display_device_details():
                                 new_risk = fix_result.get('risk_result', {}).get('risk_score', result['risk_score'])
                                 risk_reduction = old_risk - new_risk
                                 
-                                st.success(f"✅ {fix_result['message']}")
+                                st.markdown(f"<p style='color: #00FF00;'>{fix_result['message']}</p>", unsafe_allow_html=True)
                                 st.code(f"New Password: {fix_result['new_password']}", language=None)
                                 st.metric("Risk Reduction", f"{risk_reduction:.1f} points", 
                                          delta=f"{old_risk:.1f} → {new_risk:.1f}")
@@ -712,7 +761,7 @@ def display_device_details():
                     st.write(f"**Port:** {vuln.get('port')}")
                     st.write(f"**Service:** {vuln.get('service', vuln.get('name', 'Unknown'))}")
                     st.write(f"**Risk Contribution:** +{vuln.get('risk_contribution', 0)} points")
-                    if st.button(f"🔧 Close Port", key=f"fix_port_{i}"):
+                    if st.button(f"Close Port", key=f"fix_port_{i}"):
                         with st.spinner("Closing port..."):
                             fix_result = fix_risky_port(device['ip'], vuln.get('port'), st.session_state.policy)
                             if fix_result['success']:
@@ -720,7 +769,7 @@ def display_device_details():
                                 new_risk = fix_result.get('risk_result', {}).get('risk_score', result['risk_score'])
                                 risk_reduction = old_risk - new_risk
                                 
-                                st.success(f"✅ {fix_result['message']}")
+                                st.markdown(f"<p style='color: #00FF00;'>{fix_result['message']}</p>", unsafe_allow_html=True)
                                 st.metric("Risk Reduction", f"{risk_reduction:.1f} points",
                                          delta=f"{old_risk:.1f} → {new_risk:.1f}")
                                 add_alert(f"Port {vuln.get('port')} closed for {device['ip']} - Risk reduced by {risk_reduction:.1f}", "success")
@@ -745,7 +794,7 @@ def display_device_details():
                                 new_risk = fix_result.get('risk_result', {}).get('risk_score', result['risk_score'])
                                 risk_reduction = old_risk - new_risk
                                 
-                                st.success(f"✅ {fix_result['message']}")
+                                st.markdown(f"<p style='color: #00FF00;'>{fix_result['message']}</p>", unsafe_allow_html=True)
                                 st.metric("Risk Reduction", f"{risk_reduction:.1f} points",
                                          delta=f"{old_risk:.1f} → {new_risk:.1f}")
                                 add_alert(f"Firmware updated for {device['ip']} - Risk reduced by {risk_reduction:.1f}", "success")
@@ -754,7 +803,7 @@ def display_device_details():
                                 save_session_state(st.session_state.devices, st.session_state.policy)
                                 st.rerun()
                             else:
-                                st.warning("⚠️ Firmware update requires vendor support. Contact device manufacturer.")
+                                st.markdown("<p style='color: #FFA500;'>Firmware update requires vendor support. Contact device manufacturer.</p>", unsafe_allow_html=True)
                                 if vuln.get('eol_date'):
                                     st.write(f"**EOL Date:** {vuln.get('eol_date')}")
                                 if vuln.get('vendor'):
@@ -762,7 +811,7 @@ def display_device_details():
         
         # Fix all button
         st.markdown("---")
-        if st.button("🔧 Fix All Vulnerabilities", type="primary", use_container_width=True):
+        if st.button("Fix All Vulnerabilities", type="primary", use_container_width=True):
             with st.spinner("Applying all fixes..."):
                 old_risk = result['risk_score']
                 fix_result = fix_all_vulnerabilities(
@@ -774,7 +823,7 @@ def display_device_details():
                     new_risk = fix_result.get('new_risk', old_risk)
                     risk_reduction = old_risk - new_risk
                     
-                    st.success(f"✅ {fix_result['message']}")
+                    st.markdown(f"<p style='color: #00FF00;'>{fix_result['message']}</p>", unsafe_allow_html=True)
                     
                     # Show risk reduction
                     col1, col2 = st.columns(2)
@@ -799,12 +848,12 @@ def display_device_details():
 
 def display_remediation_logs():
     """Display remediation action logs."""
-    st.header("📝 Remediation Logs")
+    st.header("Remediation Logs")
     
     logs = get_remediation_logs()
     
     if not logs:
-        st.info("No remediation actions logged yet.")
+        st.markdown("<p style='color: #00BFFF;'>No remediation actions logged yet.</p>", unsafe_allow_html=True)
         return
     
     # Filter options
@@ -837,7 +886,7 @@ def display_remediation_logs():
 
 def display_export():
     """Display export options."""
-    st.header("📤 Export Data")
+    st.header("Export Data")
     
     if not st.session_state.devices:
         st.info("No data to export. Scan devices first.")
@@ -847,7 +896,7 @@ def display_export():
     
     with col1:
         st.subheader("Export Device Inventory")
-        if st.button("📥 Export Devices CSV", use_container_width=True):
+        if st.button("Export Devices CSV", use_container_width=True):
             device_data = []
             for result in st.session_state.devices:
                 device = result['device']
@@ -863,20 +912,20 @@ def display_export():
             
             filepath = export_to_csv(device_data, "device_inventory")
             if filepath:
-                st.success(f"✅ Exported to {filepath}")
+                st.markdown(f"<p style='color: #00FF00;'>Exported to {filepath}</p>", unsafe_allow_html=True)
                 add_alert(f"Device inventory exported to {filepath}", "success")
     
     with col2:
         st.subheader("Export Remediation Logs")
-        if st.button("📥 Export Logs CSV", use_container_width=True):
+        if st.button("Export Logs CSV", use_container_width=True):
             logs = get_remediation_logs()
             if logs:
                 filepath = export_to_csv(logs, "remediation_logs")
                 if filepath:
-                    st.success(f"✅ Exported to {filepath}")
+                    st.markdown(f"<p style='color: #00FF00;'>Exported to {filepath}</p>", unsafe_allow_html=True)
                     add_alert(f"Remediation logs exported to {filepath}", "success")
             else:
-                st.warning("No logs to export")
+                st.markdown("<p style='color: #FFA500;'>No logs to export</p>", unsafe_allow_html=True)
 
 
 def display_setup_device_dialog():
@@ -885,7 +934,7 @@ def display_setup_device_dialog():
     from device_manager import setup_new_device
     
     st.sidebar.markdown("---")
-    st.sidebar.subheader("⚙️ Setup New IoT Device")
+    st.sidebar.subheader("Setup New IoT Device")
     
     with st.sidebar.form("setup_device_form"):
         st.markdown("### Basic Information")
@@ -958,7 +1007,7 @@ def display_setup_device_dialog():
 def display_policy_dialog():
     """Display dialog for editing security policy."""
     st.sidebar.markdown("---")
-    st.sidebar.subheader("⚙️ Security Policy")
+    st.sidebar.subheader("Security Policy")
     
     with st.sidebar.form("policy_form"):
         st.markdown("### Password Policy")
